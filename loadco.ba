@@ -1,0 +1,17 @@
+10 'allows loading of co files from the serial port
+20 'com stats
+21 cs$ = "COM:88N1E"
+22 'start address
+23 sa% = -7536
+24 'file length
+25 fl% = 0
+
+100 input "Length";fl%
+110 open cs$ for input as 1
+115 ad% = sa%
+120 for a% = 1 to fl%
+130   c$ = input$(1,1)
+131   print "poke ";ad%;" ";asc(c$)
+140   poke ad%, asc(c$)
+150   ad% = ad% + 1
+200 next a%

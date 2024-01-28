@@ -1,0 +1,57 @@
+10 'label names
+11 DIM LN$ (10)
+20 'label addresses
+21 DIM LA% (10)
+30 'next memory address
+31 PC% = 0
+40 'current full line
+41 LI$ = ""
+50 'tokens from current line
+51 DIM LT$ (5)
+1000 'program start
+1001 INPUT "Filename";AF$
+1002 PRINT "Loading ";AF$
+1003 OPEN AF$ FOR INPUT AS 1
+1005 GOSUB 2000
+1006 END
+1010 PRINT LI$
+1020 RETURN
+2000 'iterate file
+2010 IF EOF(1) THEN GOTO 2999
+2020 LINE INPUT #1, LI$
+2030 GOSUB 3000
+2040 GOTO 2010
+2999 RETURN
+3000 'process line
+3005 IF LEFT$(LI$, 1) = ";" THEN RETURN
+3010 GOSUB 4000
+3020 FC$ = LEFT$(LT$(0), 1)
+3030 IF FC$ = "." THEN GOTO 3100
+3040 IF FC$ = ":" THEN GOTO 3200
+3041 GOTO 3900
+3100 GOSUB 5000
+3101 RETURN
+3200 GOSUB 6000
+3201 RETURN
+3900 GOSUB 7000
+3999 RETURN
+4000 'tokenize line
+4010 TI% = 0
+4020 WS$ = LI$
+4030 TC% = INSTR(WS$, " ")
+4040 IF TC% = 0 THEN GOTO 4200
+4050 LT$(TI%) = LEFT$(WS$, TC% - 1)
+4055 TI% = TI% + 1
+4060 WS$ = MID$(WS$, TC% + 1)
+4070 GOTO 4030
+4200 LT$(TI%) = WS$
+4999 RETURN
+5000 'process . directive
+5010 PRINT "dir ";LT$(0)
+5020 RETURN
+6000 'process label
+6010 PRINT "label ";LT$(0)
+6020 RETURN
+7000 'process instruction
+7010 PRINT "instr ";LT$(0)
+7020 RETURN

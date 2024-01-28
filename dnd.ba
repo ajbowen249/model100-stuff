@@ -1,0 +1,59 @@
+1 'DND
+
+2 'class codes
+3 'barb: 0
+4 'race codes
+5 'human: 0
+
+20 'ability table
+21 '(entity,[str,dex,con,int,wis,chr])
+22 dim at%(10,6)
+30 'class table
+31 '(entity,[level,class,race,hp,hit dice,hit die])
+32 dim ct%(10,6)
+
+90 'die set roll results
+91 dim sr%(10)
+
+500 'init
+510 gosub 1100
+
+1000 'roll_single(d%)->dr%
+1010 dr% = fix(rnd(1) * cdbl(d%)) + 1
+1020 return
+
+1100 'seed random[rs,i,dv]
+1110 rs = val(right$(time$,2))
+1120 for i=1 to rs
+1130   dv = rnd(1)
+1140 next i
+
+1200 'roll_set(dc%,d%)->sr%,st%[a1]
+1210 st% = 0
+1220 for a1=1 to dc%
+1230   gosub 1000
+1235   sr%[a1-1] = dr%
+1240   st% = st% + dr%
+1250 next a1
+1260 return
+
+10000 'apply race stats(ei%,ct(ei%,0-2)[a0]
+10010 if ct%(ei%,2) = 0 then goto 10050
+10047 cls
+10048 print "ERROR: No race";ct%(ei%,2)
+10049 end
+10050 'setup human
+10051 for a0=0 to 5
+10052   at%(ei%,a0) = at%(ei%,a0) + 1
+10053 next a0
+10054 return
+
+11000 'apply class stats(ei%,ct(ei%,0-2))
+11010 if ct%(ei%,1) = 0 then goto 10050
+11047 cls
+11048 print "ERROR: No class";ct%(ei%,1)
+11049 end
+11050 'setup barbarian
+11051 ct%(ei%,3) = 12 + at%(ei%,2)
+11052 ct%(ei%,4) = ct%(ei%,0)
+11053 ct%(ei%,5) = 12
