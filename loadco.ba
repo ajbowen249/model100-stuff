@@ -11,7 +11,7 @@
 115 ad% = sa%
 120 for a% = 1 to fl%
 130   c$ = input$(1,1)
-131   print "poke ";ad%;" ";asc(c$)
 140   poke ad%, asc(c$)
 150   ad% = ad% + 1
 200 next a%
+210 print "done"
