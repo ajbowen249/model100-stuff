@@ -25,7 +25,8 @@ to_string_test_buffer: .ascii "    "
 
 counter: .db 0
 
-#include "util.asm"
+#include "random.asm"
+#include "string.asm"
 
 init:
     call seed_random
