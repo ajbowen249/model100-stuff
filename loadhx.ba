@@ -12,7 +12,8 @@
 120 if c$ <> ":" then goto 110
 130 gosub 1000
 140 bc% = va%
-141 if bc% = 0 then goto 300
+141 print "expect "; bc%
+142 if bc% = 0 then goto 300
 145 sum% = 0
 150 'don't care about address or type
 160 gosub 1000 'address byte 1
