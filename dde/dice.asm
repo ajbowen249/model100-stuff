@@ -68,3 +68,39 @@ roll_d16::
 roll_d20::
     ADD_ROLLS roll_d4, roll_d16
 .endlocal
+
+.macro CALL_ROLL_WRAP &N
+    cp &N
+    jp z, _roll_d&N
+.endm
+
+.macro ROLL_WRAP &N
+_roll_d&N:
+    call roll_d&N
+    ret
+.endm
+
+.local
+; Loads HL with a value from 1-n
+; n may only be 2, 4, 6, 8, 10, 16, or 20.
+; uses a, bc
+roll_n::
+    ; IMPROVE: I tried a function table approach, but it didn't really work
+    CALL_ROLL_WRAP 2
+    CALL_ROLL_WRAP 4
+    CALL_ROLL_WRAP 6
+    CALL_ROLL_WRAP 8
+    CALL_ROLL_WRAP 10
+    CALL_ROLL_WRAP 16
+    CALL_ROLL_WRAP 20
+
+    ROLL_WRAP 2
+    ROLL_WRAP 4
+    ROLL_WRAP 6
+    ROLL_WRAP 8
+    ROLL_WRAP 10
+    ROLL_WRAP 16
+    ROLL_WRAP 20
+
+    ret
+.endlocal
