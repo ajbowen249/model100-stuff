@@ -1,3 +1,7 @@
+1 'DOES NOT WORK; KEEPING FOR LATER REFERENCE OF WHY
+2 'The modem can't quite handle arbitrary binary bytes like this. Not only does reading $4F close the file, but
+3 'it also has a hard time reading NULL characters. Switched to Intel Hex format instead (loadhx.ba)
+
 10 'allows loading of co files from the serial port
 20 'com stats
 21 cs$ = "COM:88N1E"
@@ -13,5 +17,15 @@
 130   c$ = input$(1,1)
 140   poke ad%, asc(c$)
 150   ad% = ad% + 1
+159   ' 79 ($4F) seems to trigger an eof condition
+160   if eof(1) then gosub 1000
 200 next a%
 210 print "done"
+220 end
+
+1000 'reopen file
+1010 close 1
+1020 open cs$ for input as 1
+1030 return
+
+
