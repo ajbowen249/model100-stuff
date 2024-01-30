@@ -1,5 +1,3 @@
-#define ability_max_value 20
-
 ; character set
 #define ch_A $41
 #define ch_D $44
@@ -18,3 +16,32 @@
 #define ch_right_arrow $1C
 #define ch_up_arrow $1E
 #define ch_down_arrow $1F
+
+; SRD 5.1 stuff
+#define ability_max_value 20
+
+; none yet implemented
+#define race_human      0
+#define race_elf        1
+#define race_dwarf      2
+#define race_half_elf   3
+#define race_gnome      4
+#define race_halfling   5
+#define race_half_orc   6
+#define race_tiefling   7
+#define race_dragonborn 8
+
+; none yet implemented
+#define class_fighter   0
+#define class_wizard    1
+#define class_cleric    2
+#define class_barbarian 3
+#define class_artificer 4
+#define class_bard      5
+#define class_druid     6
+#define class_monk      7
+#define class_paladin   8
+#define class_ranger    9
+#define class_rogue    10
+#define class_sorcerer 11
+#define class_warlock  12

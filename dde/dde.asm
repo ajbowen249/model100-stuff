@@ -16,19 +16,21 @@
 
 #include "character_builder.asm"
 
-test_string: .ascii "This is a test string"
-.db 10
-.db 13
-.db 0
-
-
-to_string_test_buffer: .asciz "    "
-
-counter: .db 0
+test_character:
+tc_str: .db 0
+tc_dex: .db 0
+tc_con: .db 0
+tc_int: .db 0
+tc_wis: .db 0
+tc_chr: .db 0
+tc_race: .db 0
+tc_class: .db 0
+tc_name: .asciz "          "
 
 main:
     call seed_random
 
-    call roll_abilities_ui
+    ld hl, test_character
+    call create_character_ui
 
     ret
