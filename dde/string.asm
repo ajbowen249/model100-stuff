@@ -3,8 +3,7 @@ newline_string:
 .db 13
 .db 0
 
-glob_de_to_sex_str_buffer: .ascii "    "
-.db 0
+glob_de_to_hex_str_buffer: .asciz "    "
 
 ; Prints the string starting at HL
 ; Destroys HL, a

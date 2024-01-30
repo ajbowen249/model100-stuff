@@ -8,6 +8,7 @@
     call main
     ret
 
+#include "constants.asm"
 #include "rom_api.asm"
 #include "random.asm"
 #include "dice.asm"
@@ -21,14 +22,13 @@ test_string: .ascii "This is a test string"
 .db 0
 
 
-to_string_test_buffer: .ascii "    "
-.db 0
+to_string_test_buffer: .asciz "    "
 
 counter: .db 0
 
 main:
     call seed_random
 
-    call build_character_ui
+    call roll_abilities_ui
 
     ret

@@ -1,27 +1,19 @@
 .local
-header: .ascii "Roll Abilities"
-.db 0
+header: .asciz "Roll Abilities"
+total_label:     .asciz "    Total: "
+remaining_label: .asciz "Remaining: "
+re_roll_label:   .asciz "    R: Re-Roll"
+continue_label:  .asciz "Enter: Continue"
 
-str_label: .ascii "    Strength"
-.db 0
-
-dex_label: .ascii "   Dexterity"
-.db 0
-
-con_label: .ascii "Constitution"
-.db 0
-
-int_label: .ascii "Intelligence"
-.db 0
-
-wis_label: .ascii "      Wisdom"
-.db 0
-
-chr_label: .ascii "    Charisma"
-.db 0
+str_label: .asciz "    Strength"
+dex_label: .asciz "   Dexterity"
+con_label: .asciz "Constitution"
+int_label: .asciz "Intelligence"
+wis_label: .asciz "      Wisdom"
+chr_label: .asciz "    Charisma"
 
 #define abilities_first_row 2
-#define abilities_column 17
+#define abilities_column 16
 
 .macro PRINT_AT_LOCATION &ROW, &COL, &STRING_ADDR
     ld h, &COL
@@ -45,21 +37,45 @@ remaining_points: .db 0
 ability_index: .db 0
 ability_roll_total: .db 0
 
-build_character_ui::
+; rolls abilities for a new character
+; At exit, HL is set to the beginning of the Abilities array
+roll_abilities_ui::
     call init_screen ; Everything from here is a modification to what this draws
+    call update_points
 
     ld a, 0
     ld (ability_index), a
 
 screen_loop:
     call draw_arrows
-    call rom_chget
+    call rom_kyread
+    jp z, screen_loop
 
-    cp 31
-    jp z, down_arrow
+.macro ON_KEY_JUMP &KEY_CODE, &LOCATION
+    cp &KEY_CODE
+    jp z, &LOCATION
+.endm
 
-    cp 30
-    jp z, up_arrow
+    ON_KEY_JUMP ch_down_arrow, down_arrow
+    ON_KEY_JUMP ch_s, down_arrow
+    ON_KEY_JUMP ch_S, down_arrow
+
+    ON_KEY_JUMP ch_up_arrow, up_arrow
+    ON_KEY_JUMP ch_w, up_arrow
+    ON_KEY_JUMP ch_W, up_arrow
+
+    ON_KEY_JUMP ch_left_arrow, left_arrow
+    ON_KEY_JUMP ch_a, left_arrow
+    ON_KEY_JUMP ch_A, left_arrow
+
+    ON_KEY_JUMP ch_right_arrow, right_arrow
+    ON_KEY_JUMP ch_d, right_arrow
+    ON_KEY_JUMP ch_D, right_arrow
+
+    ON_KEY_JUMP ch_R, roll_abilities_ui
+    ON_KEY_JUMP ch_r, roll_abilities_ui
+
+    ON_KEY_JUMP ch_enter, exit_ability_ui
 
     jp screen_loop
 
@@ -84,6 +100,62 @@ down_arrow:
 up_arrow:
     ARROW_UP_DOWN 0, dec
 
+left_arrow:
+    ; can't decrement if 0
+    ld hl, ability_values
+    ld a, (ability_index)
+    ld b, 0
+    ld c, a
+    add hl, bc
+    ld a, (hl)
+
+    cp 0
+    jp z, screen_loop
+
+    dec a
+    ld (hl), a
+
+    ld a, (remaining_points)
+    inc a
+    ld (remaining_points), a
+
+    call update_points
+
+    jp screen_loop
+
+right_arrow:
+    ; can't increment if 20
+    ld hl, ability_values
+    ld a, (ability_index)
+    ld b, 0
+    ld c, a
+    add hl, bc
+    ld a, (hl)
+
+    cp ability_max_value
+    jp z, screen_loop
+
+    ld b, a ; save ability value since we're about to check remaining
+
+    ; don't increment if we have no points to pull from
+    ld a, (remaining_points)
+    cp 0
+    jp z, screen_loop
+
+    dec a
+    ld (remaining_points), a
+
+    ld a, b
+    inc a
+    ld (hl), a
+
+    call update_points
+
+    jp screen_loop
+
+exit_ability_ui:
+    ; give the caller the location of our abilities array
+    ld hl, ability_values
     ret
 
 draw_arrows:
@@ -129,16 +201,23 @@ clear_arrows:
     ret
 
 init_screen:
+    call rom_cursor_off
     call rom_clear_screen
 
     ; draw static labels
     PRINT_AT_LOCATION 1, 1, header
-    PRINT_AT_LOCATION abilities_first_row + 0, 3, str_label
-    PRINT_AT_LOCATION abilities_first_row + 1, 3, dex_label
-    PRINT_AT_LOCATION abilities_first_row + 2, 3, con_label
-    PRINT_AT_LOCATION abilities_first_row + 3, 3, int_label
-    PRINT_AT_LOCATION abilities_first_row + 4, 3, wis_label
-    PRINT_AT_LOCATION abilities_first_row + 5, 3, chr_label
+    PRINT_AT_LOCATION abilities_first_row, abilities_column + 6, total_label
+    PRINT_AT_LOCATION abilities_first_row + 1, abilities_column + 6, remaining_label
+
+    PRINT_AT_LOCATION abilities_first_row + 3, abilities_column + 6, re_roll_label
+    PRINT_AT_LOCATION abilities_first_row + 4, abilities_column + 6, continue_label
+
+    PRINT_AT_LOCATION abilities_first_row + 0, 2, str_label
+    PRINT_AT_LOCATION abilities_first_row + 1, 2, dex_label
+    PRINT_AT_LOCATION abilities_first_row + 2, 2, con_label
+    PRINT_AT_LOCATION abilities_first_row + 3, 2, int_label
+    PRINT_AT_LOCATION abilities_first_row + 4, 2, wis_label
+    PRINT_AT_LOCATION abilities_first_row + 5, 2, chr_label
 
     ; Initialize ability scores
     ld a, 0
@@ -173,14 +252,39 @@ roll_loop:
 
     jp nz, roll_loop
 
+    ld a, 0
+    ld (remaining_points), a
+
+    ld hl, ability_values
+    ld b, 0
+    ld c, 0
+total_loop:
+    ld a, (hl)
+    add a, b
+    ld b, a
+    inc hl
+    ld a, c
+    inc a
+    cp 6
+    ld c, a
+    jp nz, total_loop
+
+    ld a, b
+    ld (ability_roll_total), a
+    ld d, 0
+    ld e, a
+    ld bc, glob_de_to_hex_str_buffer
+    call de_to_hex_str
+    PRINT_AT_LOCATION abilities_first_row, abilities_column + 17, glob_de_to_hex_str_buffer
+
 .macro PRINT_ABILITY_SCORE &VALUE, &ROW
     ld d, 0
     ld a, (&VALUE)
     ld e, a
-    ld bc, glob_de_to_sex_str_buffer
+    ld bc, glob_de_to_hex_str_buffer
     call de_to_hex_str
 
-    PRINT_AT_LOCATION &ROW, abilities_column, glob_de_to_sex_str_buffer
+    PRINT_AT_LOCATION &ROW, abilities_column, glob_de_to_hex_str_buffer
 .endm
 
     PRINT_ABILITY_SCORE str_val, 2
@@ -189,6 +293,50 @@ roll_loop:
     PRINT_ABILITY_SCORE int_val, 5
     PRINT_ABILITY_SCORE wis_val, 6
     PRINT_ABILITY_SCORE chr_val, 7
+
+    ret
+
+update_points:
+    ; move to current cell
+    ld a, (ability_index)
+    ld b, abilities_first_row
+    add b
+    ld l, a
+
+    ld h, abilities_column
+    call rom_set_cursor
+
+    ; load ability value
+    ld hl, ability_values
+    ld a, (ability_index)
+    ld b, 0
+    ld c, a
+    add hl, bc
+    ld a, (hl)
+
+    ; ability value to string
+    ld d, 0
+    ld e, a
+    ld bc, glob_de_to_hex_str_buffer
+    call de_to_hex_str
+
+    ld hl, glob_de_to_hex_str_buffer
+    call print_string
+
+    ; move to remaining points position
+    ld h, abilities_column + 17
+    ld l, abilities_first_row + 1
+    call rom_set_cursor
+
+    ; load remaining points
+    ld a, (remaining_points)
+    ld d, 0
+    ld e, a
+    ld bc, glob_de_to_hex_str_buffer
+    call de_to_hex_str
+
+    ld hl, glob_de_to_hex_str_buffer
+    call print_string
 
     ret
 .endlocal
