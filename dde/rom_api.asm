@@ -9,6 +9,7 @@
 #define rom_clear_screen $4231
 #define rom_disable_interrupt_7_5 $765C
 #define rom_enable_interrupt_7_5 $743C
+#define rom_chget $12CB
 
 ; memory locations
 #define seconds_10s $F934
