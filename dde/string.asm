@@ -11,7 +11,7 @@ loop:
     ld a, (hl) ; read character
     cp a, 0    ; if it's zero...
     jp z, return ; ...we're done
-    call print_a
+    call rom_print_a
     inc hl
     jp loop
 return:
