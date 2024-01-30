@@ -1,10 +1,3 @@
-.macro DEF_STR_NL &NAME, &TEXT
-&NAME: .ascii &TEXT
-.db 10
-.db 13
-.db 0
-.endm
-
 newline_string:
 .db 10
 .db 13
