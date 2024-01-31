@@ -8,11 +8,13 @@
     call main
     ret
 
+#include "util.asm"
 #include "constants.asm"
 #include "rom_api.asm"
 #include "random.asm"
 #include "dice.asm"
 #include "string.asm"
+#include "simple_menu.asm"
 
 #include "character_builder.asm"
 

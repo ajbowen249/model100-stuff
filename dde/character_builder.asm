@@ -1,4 +1,5 @@
 #include "./character_builder/roll_abilities_ui.asm"
+#include "./character_builder/select_race_ui.asm"
 
 .local
 
@@ -16,14 +17,14 @@ create_character_ui::
 
     call roll_abilities_ui
 
-    ; copy stats over
-    ld (copy_source), hl
-    ld b, 6
-    call copy_character_info
+    ; todo: copy over stats
+
+    call select_race_ui
 
     ret
 
 ; copies b bytes from source to dest, advancing both as it goes.
+; todo: unsure if working, check later
 copy_character_info:
     ld hl, (copy_source)
     ld a, (hl)

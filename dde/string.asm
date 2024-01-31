@@ -5,6 +5,15 @@ newline_string:
 
 glob_de_to_hex_str_buffer: .asciz "    "
 
+.macro PRINT_AT_LOCATION &ROW, &COL, &STRING_ADDR
+    ld h, &COL
+    ld l, &ROW
+    call rom_set_cursor
+
+    ld hl, &STRING_ADDR
+    call print_string
+.endm
+
 ; Prints the string starting at HL
 ; Destroys HL, a
 .local

@@ -15,15 +15,6 @@ chr_label: .asciz "    Charisma"
 #define abilities_first_row 2
 #define abilities_column 16
 
-.macro PRINT_AT_LOCATION &ROW, &COL, &STRING_ADDR
-    ld h, &COL
-    ld l, &ROW
-    call rom_set_cursor
-
-    ld hl, &STRING_ADDR
-    call print_string
-.endm
-
 ability_values:
 str_val: .db 0
 dex_val: .db 0
@@ -48,29 +39,25 @@ roll_abilities_ui::
 
 screen_loop:
     call draw_arrows
+read_loop:
     call rom_kyread
-    jp z, screen_loop
+    jp z, read_loop
 
-.macro ON_KEY_JUMP &KEY_CODE, &LOCATION
-    cp &KEY_CODE
-    jp z, &LOCATION
-.endm
+    ON_KEY_JUMP ch_down_arrow, on_down_arrow
+    ON_KEY_JUMP ch_s, on_down_arrow
+    ON_KEY_JUMP ch_S, on_down_arrow
 
-    ON_KEY_JUMP ch_down_arrow, down_arrow
-    ON_KEY_JUMP ch_s, down_arrow
-    ON_KEY_JUMP ch_S, down_arrow
+    ON_KEY_JUMP ch_up_arrow, on_up_arrow
+    ON_KEY_JUMP ch_w, on_up_arrow
+    ON_KEY_JUMP ch_W, on_up_arrow
 
-    ON_KEY_JUMP ch_up_arrow, up_arrow
-    ON_KEY_JUMP ch_w, up_arrow
-    ON_KEY_JUMP ch_W, up_arrow
+    ON_KEY_JUMP ch_left_arrow, on_left_arrow
+    ON_KEY_JUMP ch_a, on_left_arrow
+    ON_KEY_JUMP ch_A, on_left_arrow
 
-    ON_KEY_JUMP ch_left_arrow, left_arrow
-    ON_KEY_JUMP ch_a, left_arrow
-    ON_KEY_JUMP ch_A, left_arrow
-
-    ON_KEY_JUMP ch_right_arrow, right_arrow
-    ON_KEY_JUMP ch_d, right_arrow
-    ON_KEY_JUMP ch_D, right_arrow
+    ON_KEY_JUMP ch_right_arrow, on_right_arrow
+    ON_KEY_JUMP ch_d, on_right_arrow
+    ON_KEY_JUMP ch_D, on_right_arrow
 
     ON_KEY_JUMP ch_R, roll_abilities_ui
     ON_KEY_JUMP ch_r, roll_abilities_ui
@@ -79,7 +66,7 @@ screen_loop:
 
     jp screen_loop
 
-.macro ARROW_UP_DOWN &LIMIT, &INC_OR_DEC
+.macro ROLL_ABILITIES_ARROW_UP_DOWN &LIMIT, &INC_OR_DEC
     ld a, (ability_index)
     cp a, &LIMIT
     jp z, screen_loop
@@ -89,18 +76,16 @@ screen_loop:
     &INC_OR_DEC a
     ld (ability_index), a
 
-    call draw_arrows
-
     jp screen_loop
 .endm
 
-down_arrow:
-    ARROW_UP_DOWN 5, inc
+on_down_arrow:
+    ROLL_ABILITIES_ARROW_UP_DOWN 5, inc
 
-up_arrow:
-    ARROW_UP_DOWN 0, dec
+on_up_arrow:
+    ROLL_ABILITIES_ARROW_UP_DOWN 0, dec
 
-left_arrow:
+on_left_arrow:
     ; can't decrement if 0
     ld hl, ability_values
     ld a, (ability_index)
@@ -123,7 +108,7 @@ left_arrow:
 
     jp screen_loop
 
-right_arrow:
+on_right_arrow:
     ; can't increment if 20
     ld hl, ability_values
     ld a, (ability_index)
@@ -167,14 +152,14 @@ draw_arrows:
     ld h, abilities_column - 1
     call rom_set_cursor
 
-    ld a, 155
+    ld a, ch_printable_arrow_left
     call rom_print_a
 
     ld h, abilities_column + 4
     ; l should still have row
     call rom_set_cursor
 
-    ld a, 154
+    ld a, ch_printable_arrow_right
     call rom_print_a
 
     ret
@@ -201,7 +186,6 @@ clear_arrows:
     ret
 
 init_screen:
-    call rom_cursor_off
     call rom_clear_screen
 
     ; draw static labels
